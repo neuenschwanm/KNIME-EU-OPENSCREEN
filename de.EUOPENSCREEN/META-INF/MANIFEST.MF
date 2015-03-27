@@ -1,0 +1,43 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: EU-OPENSCREEN-Node extension for KNIME Workbench
+Bundle-SymbolicName: de.EUOPENSCREEN;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: sparqlquery.jar,
+ lib/commons-codec-1.6.jar,
+ lib/commons-csv-1.0.jar,
+ lib/commons-lang3-3.1.jar,
+ lib/httpclient-4.2.6.jar,
+ lib/httpclient-cache-4.2.6.jar,
+ lib/httpcore-4.2.5.jar,
+ lib/jackson-annotations-2.3.0.jar,
+ lib/jackson-core-2.3.3.jar,
+ lib/jackson-databind-2.3.3.jar,
+ lib/jcl-over-slf4j-1.7.6.jar,
+ lib/jena-arq-2.12.1-sources.jar,
+ lib/jena-arq-2.12.1.jar,
+ lib/jena-core-2.12.1-sources.jar,
+ lib/jena-core-2.12.1.jar,
+ lib/jena-iri-1.1.1-sources.jar,
+ lib/jena-iri-1.1.1.jar,
+ lib/jena-sdb-1.5.1-sources.jar,
+ lib/jena-sdb-1.5.1.jar,
+ lib/jena-tdb-1.1.1-sources.jar,
+ lib/jena-tdb-1.1.1.jar,
+ lib/jsonld-java-0.5.0.jar,
+ lib/libthrift-0.9.1.jar,
+ lib/log4j-1.2.17.jar,
+ lib/slf4j-api-1.7.6.jar,
+ lib/slf4j-log4j12-1.7.6.jar,
+ lib/testclass.jar,
+ lib/xercesImpl-2.11.0.jar,
+ lib/xml-apis-1.4.01.jar
+Bundle-Activator: de.EUOPENSCREEN.SPARQLQuery.SPARQLQueryNodePlugin
+Bundle-Vendor: Martin Neuenschwander
+Require-Bundle: org.eclipse.core.runtime,
+ org.knime.workbench.core,
+ org.knime.workbench.repository,
+ org.knime.base
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+

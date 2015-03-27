@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension-point id="fmp001" name="fmp001" schema="schema/fmp001.exsd"/>
+
+  
+  
+   
+   <extension
+         point="org.knime.workbench.repository.nodes">
+      <node
+            category-path="/fmp001"
+            factory-class="de.EUOPENSCREEN.SPARQLQuery.SPARQLQueryNodeFactory"
+            id="de.EUOPENSCREEN.SPARQLQueryNodeFactory">
+      </node>
+      <node
+            category-path="/fmp001"
+            factory-class="de.EUOPENSCREEN.FastTanimoto.FastTanimotoNodeFactory"
+            id="de.EUOPENSCREEN.FastTanimotoNodeFactory">
+      </node>
+   </extension>
+   <extension
+         point="org.knime.workbench.repository.categories">
+      <category
+            icon="src/eu_openscreen_logo.png"
+            level-id="fmp001"
+            locked="true"
+            name="EU-OPENSCREEN"
+            path="/">
+      </category>
+   </extension>
+   
+   
+</plugin>
