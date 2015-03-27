@@ -29,14 +29,7 @@ public class SPARQLQueryNodeFactory
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<SPARQLQueryNodeModel> createNodeView(final int viewIndex,
-            final SPARQLQueryNodeModel nodeModel) {
-        return new SPARQLQueryNodeView(nodeModel);
-    }
+   
 
     /**
      * {@inheritDoc}
@@ -53,6 +46,13 @@ public class SPARQLQueryNodeFactory
     public NodeDialogPane createNodeDialogPane() {
         return new SPARQLQueryNodeDialog();
     }
+
+	@Override
+	public NodeView<SPARQLQueryNodeModel> createNodeView(int viewIndex,
+			SPARQLQueryNodeModel nodeModel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
 

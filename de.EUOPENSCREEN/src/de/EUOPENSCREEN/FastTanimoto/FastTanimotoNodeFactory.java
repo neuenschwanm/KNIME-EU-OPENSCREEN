@@ -29,14 +29,7 @@ public class FastTanimotoNodeFactory
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<FastTanimotoNodeModel> createNodeView(final int viewIndex,
-            final FastTanimotoNodeModel nodeModel) {
-        return new FastTanimotoNodeView(nodeModel);
-    }
+   
 
     /**
      * {@inheritDoc}
@@ -53,6 +46,13 @@ public class FastTanimotoNodeFactory
     public NodeDialogPane createNodeDialogPane() {
         return new FastTanimotoNodeDialog();
     }
+
+	@Override
+	public NodeView<FastTanimotoNodeModel> createNodeView(int viewIndex,
+			FastTanimotoNodeModel nodeModel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
 

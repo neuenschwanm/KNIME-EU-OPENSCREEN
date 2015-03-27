@@ -334,7 +334,8 @@ private ColumnRearranger createColumnRearranger(DataTableSpec in) {
       
  CellFactory factory = new AbstractCellFactory(allColSpecs) {
     	
-    	public DataCell[] getCells(DataRow row) {
+    	@Override
+		public DataCell[] getCells(DataRow row) {
            	
     		DataCell[] cells = new DataCell[4];
     		
