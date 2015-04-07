@@ -8,11 +8,13 @@ import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.StringValue;
 import org.knime.core.data.container.AbstractCellFactory;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.vector.bitvector.BitVectorValue;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
@@ -20,7 +22,6 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -36,58 +37,31 @@ import java.util.Locale;
  */
 public class FastTanimotoNodeModel extends NodeModel {
     
-    // the logger instance
-    private static final NodeLogger logger = NodeLogger
-            .getLogger(FastTanimotoNodeModel.class);
+    // the logger instance  private static final NodeLogger logger = NodeLogger.getLogger(FastTanimotoNodeModel.class);
         
-    /** the settings key which is used to retrieve and 
-        store the settings (from the dialog or from a settings file)    
-       (package visibility to be usable from the dialog). */
+    /** configuration key and default for the threshold value */
 	static final String CFGKEY_THRESHOLD = "threshold";
 
-    /** initial default count value. */
-    static final double DEFAULT_THRESHOLD = 0.6;
+	/** the default value for the tanimoto threshold*/
+	static final double DEFAULT_THRESHOLD = 0.6;
 
-    
-    /** Config identifier: column name. */
+    /** configuration key for the name of the molecule ID column */
     public static final String CFGKEY_ID_COLUMN = "Column_name_identifiers";
+    /** configuration key for the name of the fingerprint column */
     public static final String CFGKEY_FP_COLUMN = "Column_name_fingerprints";
 
-	
     private SettingsModelString m_columnName_ID = new SettingsModelString(CFGKEY_ID_COLUMN, null);
     private SettingsModelString m_columnName_FP = new SettingsModelString(CFGKEY_FP_COLUMN, null);
     private SettingsModelDoubleBounded m_threshold = new SettingsModelDoubleBounded(FastTanimotoNodeModel.CFGKEY_THRESHOLD, FastTanimotoNodeModel.DEFAULT_THRESHOLD,0.0,1.0); 
     
+    // the array variables for the unbuffered data table
+    private RowKey[]  	rowkey;   //the identifier of the incoming data row
+    private int 		counter;  //the total number of rows to process
+    private String[]  	ID;   //the identifier of the molecule
+    private String[] 	similars; //the output with the id's of all similar molecules
+    private String[] 	coefficients; // the output with the corresponding tanimoto coefficients
+    private int[]       number_of_similars; //the output indicating the number of similar molecules found
     
-    private RowKey[]  	rowkey;
-    private int 		counter;
-    private String[]  	ID;
-    private String[] 	similars;
-    private String[] 	coefficients;
-    private int[]       number_of_similars;
-    
-    /* ------------------------------------------------------------------------------------- */
-    
-    /**
-     * takes a String with the molecule fingerprint as "01010100...", and creates a java BitSet object from it
-     * @param s
-     * @return
-     */
-    private static BitSet createFromString(String s) {
-        BitSet t = new BitSet(s.length());
-        int lastBitIndex = s.length() - 1;
-        int i = lastBitIndex;
-        while ( i >= 0) {
-            if ( s.charAt(i) == '1'){
-                t.set(lastBitIndex - i);           
-                i--;
-            }
-            else
-                i--;               
-        }
-        return t;
-    }
-          
     /* ------------------------------------------------------------------------------------- */
     
     /**
@@ -116,7 +90,11 @@ public class FastTanimotoNodeModel extends NodeModel {
       final int idColIndex = inputSpec.findColumnIndex(m_columnName_ID.getStringValue());
       final int fpColIndex = inputSpec.findColumnIndex(m_columnName_FP.getStringValue());
   
-      //declare variables for tanimoto search
+      
+      ExecutionMonitor exec1 = exec.createSubProgress(0.5);
+      ExecutionMonitor exec2 = exec.createSubProgress(0.5);
+     
+      //declare variables for tanimoto search, initialize the array with the total number of rows
       ID = new String[counter];
       BitSet[]  fp = new BitSet[counter];
       similars = new String[counter];
@@ -138,10 +116,11 @@ public class FastTanimotoNodeModel extends NodeModel {
         
 	    	i++;
       
-	    	//always after 500 molecules are processed print a warning
-	      	if ((i % 500) == 0) {
-	      		logger.warn("BitSet created for: " + i + " molecules");
-	      	}
+	      	//check if execution was cancelled by the user 
+	      	exec.checkCanceled();
+	      	//set the progress bar and set message
+	      	exec1.setProgress(((double) i/ (double) counter), "BitSet created for " + String.valueOf(i) + " molecules");    
+	      	 
       }
       
       
@@ -180,12 +159,13 @@ public class FastTanimotoNodeModel extends NodeModel {
       	//polish output      		
       	if (similars[p].length() > 0){similars[p] = similars[p].substring(1);}
       	if (coefficients[p].length() > 0){ coefficients[p] = coefficients[p].substring(1);}
-      	
-       		//always after 500 molecules are processed print a warning and set the progress bar
-	      	 if ((p % 500) == 0) {
-		       	  logger.warn("tanimoto calculated for: " + p + " molecules");
-		       	  exec.setProgress(((double) p/ (double) counter));
-		     }
+     
+      	//check if execution was cancelled by the user
+      	exec.checkCanceled();  
+      	//set the progress bar and message
+     	exec2.setProgress(((double) p/ (double) counter), "Tanimoto calculated for " + String.valueOf(p) + " molecules");    
+  	     	 
+       
       	}
     
         
@@ -211,14 +191,46 @@ public class FastTanimotoNodeModel extends NodeModel {
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
             throws InvalidSettingsException {
-        
-        // TODO: check if user settings are available, fit to the incoming
-        // table structure, and the incoming types are feasible for the node
-        // to execute. If the node can execute in its current state return
-        // the spec of its output data table(s) (if you can, otherwise an array
-        // with null elements), or throw an exception with a useful user message
-
-        return new DataTableSpec[]{null};
+            	
+    	//check whether there is at least 1 fingerprint and 1 String column in the input table
+    	
+    	boolean hasBitVectorColumn = false;
+    	boolean hasStringColumn = false;
+    	
+    	//loop through all columns in the input table 0
+    	for (int i=0; i < inSpecs[0].getNumColumns(); i++) {
+    		DataColumnSpec columnSpec = inSpecs[0].getColumnSpec(i);
+    		
+    		if (columnSpec.getType().isCompatible (BitVectorValue.class)) {	
+    			//found one BitVector column
+    			hasBitVectorColumn = true;
+    		}
+    		
+    		if (columnSpec.getType().isCompatible (StringValue.class)) {	
+    			//found one String column
+    			hasStringColumn = true;
+    		}
+    		
+    	}
+    	
+    	//throw error messages if a required column type is missing
+    	if (!hasBitVectorColumn) {
+    		throw new InvalidSettingsException("The input table must contain at least 1 BitVector column");
+    	}	
+    	
+    	if (!hasStringColumn) {
+    		throw new InvalidSettingsException("The input table must contain at least 1 String column that contains molecule identifiers");
+    	}
+    	
+    	
+    	//produce the output table spec which specifies the output of this node
+    	DataColumnSpec[] newColumnSpec = createAppendedOutputTableSpec();  //the 4 appended columns
+    	DataTableSpec appendedSpec = new DataTableSpec(newColumnSpec);
+    	DataTableSpec outputSpec = new DataTableSpec(inSpecs[0], appendedSpec); //append the spec of the output columns to the input table spec
+    	
+    	return new DataTableSpec[]{outputSpec};
+    	
+    
     }
 
     /**
@@ -255,13 +267,6 @@ public class FastTanimotoNodeModel extends NodeModel {
     protected void validateSettings(final NodeSettingsRO settings)
             throws InvalidSettingsException {
             
-        // TODO check if the settings could be applied to our model
-        // e.g. if the count is in a certain range (which is ensured by the
-        // SettingsModel).
-        // Do not actually set any values of any member variables.
-
-  //      m_count.validateSettings(settings);
-
     	m_columnName_ID.validateSettings(settings);
     	m_columnName_FP.validateSettings(settings);
     	m_threshold.validateSettings(settings);
@@ -320,19 +325,31 @@ private int geti(RowKey rk) {
 	return -1;
 }
 
+//takes a String with the molecule fingerprint as "01010100...", and creates a java BitSet object from it
+private static BitSet createFromString(String s) {
+    BitSet t = new BitSet(s.length());
+    int lastBitIndex = s.length() - 1;
+    int i = lastBitIndex;
+    while ( i >= 0) {
+        if ( s.charAt(i) == '1'){
+            t.set(lastBitIndex - i);           
+            i--;
+        }
+        else
+            i--;               
+    }
+    return t;
+}
+      
 
 //function for joining the input table to the result table
 private ColumnRearranger createColumnRearranger(DataTableSpec in) {
-    ColumnRearranger c = new ColumnRearranger(in);
-    // column spec of the appended column
-   
-    DataColumnSpec[] allColSpecs = new DataColumnSpec[4];
-    allColSpecs[0] = new DataColumnSpecCreator("tanimoto.id", StringCell.TYPE).createSpec();
-    allColSpecs[1] = new DataColumnSpecCreator("tanimoto.similars", StringCell.TYPE).createSpec();
-    allColSpecs[2] = new DataColumnSpecCreator("tanimoto.coefficients", StringCell.TYPE).createSpec();
-    allColSpecs[3] = new DataColumnSpecCreator("tanimoto.num.similars", IntCell.TYPE).createSpec();
+
+	ColumnRearranger c = new ColumnRearranger(in);
+    
+    DataColumnSpec[] allColSpecs = createAppendedOutputTableSpec();  //columns specs of the appended columns
       
- CellFactory factory = new AbstractCellFactory(allColSpecs) {
+    CellFactory factory = new AbstractCellFactory(allColSpecs) {
     	
     	@Override
 		public DataCell[] getCells(DataRow row) {
@@ -345,13 +362,26 @@ private ColumnRearranger createColumnRearranger(DataTableSpec in) {
     		cells[2] = new StringCell(coefficients[i]);
     		cells[3] = new IntCell(number_of_similars[i]);
     
-              return cells;
+             return cells;
             }
     };
+    
     c.append(factory);
     return c;
 }
 
+
+//creates the columns spec of the appended data columns, for createColumnRearranger and Configure
+private DataColumnSpec[] createAppendedOutputTableSpec() {
+	
+	 DataColumnSpec[] allColSpecs = new DataColumnSpec[4];
+	 allColSpecs[0] = new DataColumnSpecCreator("tanimoto.id", StringCell.TYPE).createSpec();
+	 allColSpecs[1] = new DataColumnSpecCreator("tanimoto.similars", StringCell.TYPE).createSpec();
+	 allColSpecs[2] = new DataColumnSpecCreator("tanimoto.coefficients", StringCell.TYPE).createSpec();
+	 allColSpecs[3] = new DataColumnSpecCreator("tanimoto.num.similars", IntCell.TYPE).createSpec();
+	
+	 return allColSpecs;	
+}
 
 }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="./semantic_web_logo.png" type="Source" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+<knimeNode icon="./SPARQLQueryIcon.png" type="Source" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
     <name>SPARQL Query</name>
     
     <shortDescription>
@@ -9,14 +9,13 @@
     <fullDescription>
         <intro> A SPARQL query is sent to the SPARQL endpoint and the resulting table is sent to the out-port. All result are retrieved as string cells. The node uses the java libraries provided by the Apache Jena project (https://jena.apache.org/, version 2.12.1)</intro>
         
-        
         <option name="SPARQL Query">The SPARQL query string, an example query is provided in the default setting</option>
         <option name="SPARQL Endpoint">Address of a SPARQL Endpoint, an example for the ChEMBL endpoint is provided in the default setting</option>
      
     </fullDescription>
     
     <ports>
-         <outPort index="0" name="Out-Port name">Table with string columns corresponding to each queried variable</outPort>
+         <outPort index="0" name="QueryResults">Table with string columns corresponding to each queried variable</outPort>
         <!-- possibly more output ports here-->
     </ports>    
    

@@ -1,5 +1,7 @@
 package de.EUOPENSCREEN.SPARQLQuery;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -19,7 +21,7 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
+//import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -34,6 +36,8 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
+import javax.swing.Timer;
+
 /**
  * This is the model implementation of SPARQLQuery.
  * performs a SPARQL search on an endpoint and retrieves the result as a table
@@ -43,8 +47,7 @@ import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 public class SPARQLQueryNodeModel extends NodeModel {
     
     // the logger instance
-    private static final NodeLogger logger = NodeLogger
-            .getLogger(SPARQLQueryNodeModel.class);
+  //  private static final NodeLogger logger = NodeLogger.getLogger(SPARQLQueryNodeModel.class);
         
 	static final String CFGKEY_QUERY = "Query";
 	static final String CFGKEY_ENDPOINT = "Endpoint";
@@ -57,6 +60,29 @@ public class SPARQLQueryNodeModel extends NodeModel {
     private final  SettingsModelString m_query = new SettingsModelString(SPARQLQueryNodeModel.CFGKEY_QUERY, SPARQLQueryNodeModel.QUERY);
     private final  SettingsModelString m_endpoint = new SettingsModelString(SPARQLQueryNodeModel.CFGKEY_ENDPOINT, SPARQLQueryNodeModel.ENDPOINT);
     private final  SettingsModelIntegerBounded m_timeout = new SettingsModelIntegerBounded(SPARQLQueryNodeModel.CFGKEY_TIMEOUT, SPARQLQueryNodeModel.TIMEOUT,0, Integer.MAX_VALUE);
+    
+    
+    private ExecutionContext innerExecContext;
+    
+    //inner class for the action listener of the timer
+    class TimerListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+
+			//only if we have a valid reference to the execution context
+			if (! (innerExecContext==null)){
+				try {
+					//we check if the node was canceled by the user
+					innerExecContext.checkCanceled();
+				} catch (CanceledExecutionException e) {
+					
+				}
+			}
+			
+		}
+    	
+    }
     
     /**
      * Constructor for the node model.
@@ -74,23 +100,30 @@ public class SPARQLQueryNodeModel extends NodeModel {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
             final ExecutionContext exec) throws Exception {
  
+   
+    
+    	//the execution context is passed to an instance variable
+    	innerExecContext = exec;
+    	
+    	//a timer is started which checks for cancellation of the node every 50 msec
+    	Timer timer = new Timer(50, new TimerListener());
+		timer.setRepeats(true);
+		timer.start();		
+    	
         //heres the guts
         String myquery = m_query.getStringValue();
         String myendpoint = m_endpoint.getStringValue();
         int mytimeout = m_timeout.getIntValue()*1000;  //give timeout in msec
         
-        
-        
         BufferedDataContainer container=null;
         
         
-        	LogCtl.setCmdLogging();
+        	LogCtl.setCmdLogging(); //deactivate the logging of apache jena
         	
-        	logger.info("query " + myquery + " sent to " + myendpoint);
         	
-        	Query query = QueryFactory.create(myquery);
+        		Query query = QueryFactory.create(myquery);
      	   
-        	      // Remote execution.
+        	     // Remote execution, this is why we have to check with a timer for cancellation of the node
 	            QueryExecution qexec = QueryExecutionFactory.sparqlService(myendpoint, query);
 	         
 	            //if the timeout is at least 1000 msec
@@ -98,8 +131,12 @@ public class SPARQLQueryNodeModel extends NodeModel {
 	            // Set the DBpedia specific timeout.
 	            	((QueryEngineHTTP)qexec).addParam("timeout", String.valueOf(mytimeout)) ;
 	            }
+	 
+	            //set progress with the message that query has been sent
+		      	exec.setProgress(0.1, "Query sent to " + myendpoint + ", waiting for response");    
+
 	            
-	            // Execute.
+	            // Execute and wait for response, meanwhile the timer checks for cancellation of the node
 	            ResultSet rs = qexec.execSelect();
 	            
 	            int no_of_columns =  rs.getResultVars().size(); //the number of columns of the output table
@@ -107,6 +144,7 @@ public class SPARQLQueryNodeModel extends NodeModel {
 	            //create column data table with String cells
 	            DataColumnSpec[] allColSpecs = new DataColumnSpec[no_of_columns];
 	            
+	            //set the names of the result columns
 	            int i= 0;
 	            for (String s: rs.getResultVars()) { 	
 	            	allColSpecs[i] = new DataColumnSpecCreator(s, StringCell.TYPE).createSpec();

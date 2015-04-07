@@ -21,7 +21,7 @@
    <extension
          point="org.knime.workbench.repository.categories">
       <category
-            icon="icons/eu_openscreen_logo.png"
+            icon="icons/EUOPENSCREENIcon.png"
             level-id="fmp001"
             locked="true"
             name="EU-OPENSCREEN"
