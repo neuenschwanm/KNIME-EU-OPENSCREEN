@@ -88,7 +88,6 @@ public class SPARQLQueryNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected SPARQLQueryNodeModel() {
-    
         // no incoming port and one outgoing port is assumed
         super(0, 1);
     }
@@ -100,8 +99,6 @@ public class SPARQLQueryNodeModel extends NodeModel {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
             final ExecutionContext exec) throws Exception {
  
-   
-    
     	//the execution context is passed to an instance variable
     	innerExecContext = exec;
     	
@@ -184,7 +181,6 @@ public class SPARQLQueryNodeModel extends NodeModel {
 	            	
 	            }
 	            
-	   
 	        //dispose the qexec object
 	        qexec.close();
         

@@ -106,9 +106,24 @@ public class FastTanimotoNodeModel extends NodeModel {
       //create and initialize arrays
       int i = 0;
       for (DataRow r : inData[0]) { 
-	    	rowkey[i] = r.getKey();
-	      	fp[i] = createFromString(r.getCell(fpColIndex).toString());
-	      	ID[i] = r.getCell(idColIndex).toString();
+	    	
+    	  	//the rowkey is taken from the input table
+    	    rowkey[i] = r.getKey();
+	    	
+	    	//tests whether the cell for the fingerprint is missing and creates the BitSet from the String representation. A missing cell leads to a an empty BitSet
+	    	if(!r.getCell(fpColIndex).isMissing()) {
+	    		fp[i] = createFromString(r.getCell(fpColIndex).toString());
+	    	} else {
+	    		fp[i] = createFromString("");
+	    	}
+	      	
+	    	//tests whether the cell for the identifier is missing and creates a String cell representation. A missing cell gets an empty String as identifier
+	    	if (!r.getCell(idColIndex).isMissing()) {
+	    		ID[i] = r.getCell(idColIndex).toString();
+	    	} else {
+	    		ID[i] = "";
+	    	}
+	      	
 	      	similars[i] = "";
 	      	coefficients[i] = "";
 	      	cardinality[i] = fp[i].cardinality();

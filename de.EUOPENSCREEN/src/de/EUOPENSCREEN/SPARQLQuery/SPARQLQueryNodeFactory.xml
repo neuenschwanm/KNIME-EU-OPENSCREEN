@@ -3,7 +3,7 @@
     <name>SPARQL Query</name>
     
     <shortDescription>
-        Performs a SPARQL search on an endpoint and retrieves the result as a table
+        Performs a SPARQL search on an endpoint and retrieves the result as a table of strings
     </shortDescription>
     
     <fullDescription>
@@ -15,7 +15,7 @@
     </fullDescription>
     
     <ports>
-         <outPort index="0" name="QueryResults">Table with string columns corresponding to each queried variable</outPort>
+         <outPort index="0" name="Query results">Table with string columns corresponding to each queried variable</outPort>
         <!-- possibly more output ports here-->
     </ports>    
    
