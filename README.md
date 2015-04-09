@@ -6,5 +6,5 @@ that it can easily be incorporated into a report.
 
 SPARQL Query: permits to send a SPARQL Query to a SPARQL endpoint and retrieves the result as a table of strings.
 
-For quick installation of the nodes into an exsisting KNIME installation, download the "de.EUOPENSCREEN_1.0.0.201504071631.jar" file
-and place it into the "dropins" subfolder of your knime installation. The two plugins will show up under the "uncategorized" category.
+For quick installation of the nodes into an exsisting KNIME installation, download the "de.EUOPENSCREEN_1.0.0.<version>.jar" file
+and place it into the "dropins" subfolder of your knime installation. The two plugins will show up under the "uncategorized" plug-in category in your node repository.
