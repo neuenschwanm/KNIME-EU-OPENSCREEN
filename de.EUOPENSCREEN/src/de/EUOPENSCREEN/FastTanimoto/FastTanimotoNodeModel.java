@@ -7,7 +7,6 @@ import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.AbstractCellFactory;
 import org.knime.core.data.container.CellFactory;
@@ -26,6 +25,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import java.util.BitSet;
+import java.util.Hashtable;
 import java.util.Locale;
 
 
@@ -54,14 +54,16 @@ public class FastTanimotoNodeModel extends NodeModel {
     private SettingsModelString m_columnName_FP = new SettingsModelString(CFGKEY_FP_COLUMN, null);
     private SettingsModelDoubleBounded m_threshold = new SettingsModelDoubleBounded(FastTanimotoNodeModel.CFGKEY_THRESHOLD, FastTanimotoNodeModel.DEFAULT_THRESHOLD,0.0,1.0); 
     
-    // the array variables for the unbuffered data table
-    private RowKey[]  	rowkey;   //the identifier of the incoming data row
+    // the array variables for the unbuffered data table   
+    private Hashtable <String, Integer> rowkey; 
+    
     private int 		counter;  //the total number of rows to process
     private String[]  	ID;   //the identifier of the molecule
     private String[] 	similars; //the output with the id's of all similar molecules
     private String[] 	coefficients; // the output with the corresponding tanimoto coefficients
     private int[]       number_of_similars; //the output indicating the number of similar molecules found
-    
+    private int[]		cardinality_threshold; //the minimum number of 1's required in the second fingerprint to reach the threshold
+  
     /* ------------------------------------------------------------------------------------- */
     
     /**
@@ -90,7 +92,9 @@ public class FastTanimotoNodeModel extends NodeModel {
       final int idColIndex = inputSpec.findColumnIndex(m_columnName_ID.getStringValue());
       final int fpColIndex = inputSpec.findColumnIndex(m_columnName_FP.getStringValue());
   
-      
+      //get the threshold from the configure dialog
+      double threshold = m_threshold.getDoubleValue();
+  
       ExecutionMonitor exec1 = exec.createSubProgress(0.5);
       ExecutionMonitor exec2 = exec.createSubProgress(0.5);
      
@@ -100,15 +104,16 @@ public class FastTanimotoNodeModel extends NodeModel {
       similars = new String[counter];
       coefficients = new String[counter];
       int[] cardinality = new int[counter];
-      rowkey = new RowKey[counter];
+      rowkey = new Hashtable <String, Integer>();
       number_of_similars = new int[counter];
-      
+      cardinality_threshold = new int[counter];
+        
       //create and initialize arrays
       int i = 0;
       for (DataRow r : inData[0]) { 
 	    	
     	  	//the rowkey is taken from the input table
-    	    rowkey[i] = r.getKey();
+    	    rowkey.put(r.getKey().getString(),i);
 	    	
 	    	//tests whether the cell for the fingerprint is missing and creates the BitSet from the String representation. A missing cell leads to a an empty BitSet
 	    	if(!r.getCell(fpColIndex).isMissing()) {
@@ -128,7 +133,8 @@ public class FastTanimotoNodeModel extends NodeModel {
 	      	coefficients[i] = "";
 	      	cardinality[i] = fp[i].cardinality();
 	    	number_of_similars[i] = 0;
-        
+	     	cardinality_threshold[i] = (int) ((double) cardinality[i] * threshold) - 1; 
+	        
 	    	i++;
       
 	      	//check if execution was cancelled by the user 
@@ -146,28 +152,32 @@ public class FastTanimotoNodeModel extends NodeModel {
       BitSet mybitset;
       double tanimoto;
       
-      //get the threshold from the configure dialog
-      double threshold = m_threshold.getDoubleValue();
       
       	for (int p=0; p<counter;p++){
       		for (int q=0; q < counter; q++){
-      			mybitset = (BitSet) fp[p].clone();
-      			mybitset.and(fp[q]) ;
       			
-      			if (!(cardinality[p] == 0)) {
-      				tanimoto = (double) mybitset.cardinality() / (double) cardinality[p];
-      			} else {
-      				tanimoto = 0.0;	
-      			}	
-      			
-      			if (tanimoto > threshold) {
-      					//dont compare the molecule to itself
-      						if (!(q==p)){
-      							similars[p] = similars[p] + "," + ID[q];
-      							coefficients[p] = coefficients[p] + "," + String.format("%.2f",tanimoto);
-      							number_of_similars[p] = number_of_similars[p] + 1;
-      						}
-      				}
+	     			//only if the fingerprint to compare to contains enough 1's - this increases speed for high tanimoto thresholds
+	      			if (cardinality[q] > cardinality_threshold[p]) {
+	      
+	      			
+		      			mybitset = (BitSet) fp[p].clone();
+		      			mybitset.and(fp[q]) ;
+		      			
+		      			if (!(cardinality[p] == 0)) {
+		      				tanimoto = (double) mybitset.cardinality() / (double) cardinality[p];
+		      			} else {
+		      				tanimoto = 0.0;	
+		      			}	
+	      			
+		      			if (tanimoto > threshold) {
+		      					//do not compare the molecule to itself
+		      						if (!(q==p)){
+		      							similars[p] = similars[p] + "," + ID[q];
+		      							coefficients[p] = coefficients[p] + "," + String.format("%.2f",tanimoto);
+		      							number_of_similars[p] = number_of_similars[p] + 1;
+		      						}
+		      		}     			
+      			}
       		}
       			
       	
@@ -326,20 +336,6 @@ public class FastTanimotoNodeModel extends NodeModel {
 /* ----------------- functions for column rearranger -------------------------------------- */
 
     
-//using the rowkey, derives the index of the corresponding array data. Helper function for createColumnRearranger
-private int geti(RowKey rk) {
-	
-	for (int j=0; j<counter; j++) {
-		
-		if (rowkey[j].toString().equals(rk.toString())){
-			return j;
-		}
-		
-	}
-	
-	return -1;
-}
-
 //takes a String with the molecule fingerprint as "01010100...", and creates a java BitSet object from it
 private static BitSet createFromString(String s) {
     BitSet t = new BitSet(s.length());
@@ -370,8 +366,8 @@ private ColumnRearranger createColumnRearranger(DataTableSpec in) {
 		public DataCell[] getCells(DataRow row) {
            	
     		DataCell[] cells = new DataCell[4];
-    		
-    		int i = geti(row.getKey());
+    				
+    		int i = rowkey.get(row.getKey().getString());
     		cells[0] = new StringCell(ID[i]);
     		cells[1] = new StringCell(similars[i]);
     		cells[2] = new StringCell(coefficients[i]);

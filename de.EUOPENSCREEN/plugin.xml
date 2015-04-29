@@ -17,6 +17,13 @@
             factory-class="de.EUOPENSCREEN.FastTanimoto.FastTanimotoNodeFactory"
             id="de.EUOPENSCREEN.FastTanimotoNodeFactory">
       </node>
+        <node
+            category-path="/community/fmp001"
+            factory-class="de.EUOPENSCREEN.FastTanimoto2.FastTanimoto2NodeFactory"
+            id="de.EUOPENSCREEN.FastTanimoto2NodeFactory">
+      </node>
+      
+      
    </extension>
    <extension
          point="org.knime.workbench.repository.categories">
