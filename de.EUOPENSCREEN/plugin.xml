@@ -31,7 +31,7 @@
             icon="icons/EUOPENSCREENIcon.png"
             level-id="fmp001"
             locked="true"
-            name="EU-OPENSCREEN"
+            name="HTS Data Mining"
             path="/community">
       </category>
    </extension>
