@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="de.EUOPENSCREEN.feature"
+      id="de.euopenscreen.feature"
       label="EU-OPENSCREEN"
       version="1.0.0.qualifier"
       provider-name="Martin Neuenschwander">
