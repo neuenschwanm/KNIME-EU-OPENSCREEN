@@ -103,9 +103,10 @@ public class FastTanimotoNodeModel extends NodeModel {
       BitSet[]  fp = new BitSet[counter];
       similars = new String[counter];
       coefficients = new String[counter];
+      int[] cardinality = new int[counter];
       rowkey = new Hashtable <String, Integer>();
       number_of_similars = new int[counter];
-    
+     
       //create and initialize arrays
       int i = 0;
       for (DataRow r : inData[0]) {
@@ -129,8 +130,9 @@ public class FastTanimotoNodeModel extends NodeModel {
 
 	      	similars[i] = "";
 	      	coefficients[i] = "";
-	     	number_of_similars[i] = 0;
-
+	      	cardinality[i] = fp[i].cardinality();
+	    	number_of_similars[i] = 0;
+	    
 	    	i++;
 
 	      	//check if execution was cancelled by the user
@@ -145,26 +147,23 @@ public class FastTanimotoNodeModel extends NodeModel {
       Locale.setDefault(Locale.ENGLISH);
 
      //perform tanimoto search and populate arrays
-      BitSet mybitset1,mybitset2;
-      int cardinality1,cardinality2;
+      BitSet mybitset;
       double tanimoto;
-
+      int cardinality_or;
 
       	for (int p=0; p<counter;p++){
       		for (int q=0; q < counter; q++){
 
-	     
-		      			mybitset1 = (BitSet) fp[p].clone();
-		      			mybitset1.and(fp[q]) ;
-		      			cardinality1 = mybitset1.cardinality();
-		      			
-		      			mybitset2 = (BitSet) fp[p].clone();
-		      			mybitset2.or(fp[q]) ;
-		      			cardinality2 = mybitset2.cardinality();
-		      			
+	     	
 
-		      			if (!(cardinality2 == 0)) {
-		      				tanimoto = (double) cardinality1 / (double) cardinality2;
+		      			mybitset = (BitSet) fp[p].clone();
+		      			mybitset.and(fp[q]) ;
+
+		      			cardinality_or = cardinality[p] + cardinality[q] - mybitset.cardinality();
+		      			
+		      			
+		      			if (!(cardinality_or == 0)) {
+		      				tanimoto = (double) mybitset.cardinality() / (double) cardinality_or;
 		      			} else {
 		      				tanimoto = 0.0;
 		      			}

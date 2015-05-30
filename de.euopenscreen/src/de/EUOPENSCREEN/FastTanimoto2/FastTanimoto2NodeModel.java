@@ -76,7 +76,7 @@ public class FastTanimoto2NodeModel extends NodeModel {
     private String[] 	similars; //the output with the id's of all similar molecules
     private String[] 	coefficients; // the output with the corresponding tanimoto coefficients
     private int[]       number_of_similars; //the output indicating the number of similar molecules found
-   
+ 
     /* ------------------------------------------------------------------------------------- */
 
     /**
@@ -120,6 +120,7 @@ public class FastTanimoto2NodeModel extends NodeModel {
       BitSet[]  fp0 = new BitSet[counter0];
       similars = new String[counter0];
       coefficients = new String[counter0];
+      int[] cardinality0 = new int[counter0];
       rowkey = new   Hashtable<String, Integer>() ;
       number_of_similars = new int[counter0];
   
@@ -136,7 +137,8 @@ public class FastTanimoto2NodeModel extends NodeModel {
       //declare variables for tanimoto search, initialize the array with the total number of rows
       ID1 = new String[counter1];
       BitSet[]  fp1 = new BitSet[counter1];
-  
+      int[] cardinality1 = new int[counter1];
+
       //create and initialize arrays, table0, test set
       int i = 0;
 
@@ -163,7 +165,8 @@ public class FastTanimoto2NodeModel extends NodeModel {
 
 	      	similars[i] = "";
 	      	coefficients[i] = "";
-	     	number_of_similars[i] = 0;
+	      	cardinality0[i] = fp0[i].cardinality();
+	    	number_of_similars[i] = 0;
 	 
 	    	i++;
 
@@ -196,7 +199,8 @@ public class FastTanimoto2NodeModel extends NodeModel {
 	    		ID1[j] = "";
 	    	}
 
-	    
+	       	cardinality1[j] = fp1[j].cardinality();
+
 	    	j++;
 
 	      	//check if execution was cancelled by the user
@@ -211,30 +215,28 @@ public class FastTanimoto2NodeModel extends NodeModel {
       Locale.setDefault(Locale.ENGLISH);
 
      //perform tanimoto search and populate arrays
-      BitSet mybitset1,mybitset2;
-      int    cardinality1,cardinality2;
+      BitSet mybitset;
       double tanimoto;
-
+      int cardinality_or;
 
       //outer loop, goes through table 0
       	for (int p=0; p<counter0;p++){
       		//inner loop, goes through table 1
       		for (int q=0; q < counter1; q++){
 
-      			mybitset1 = (BitSet) fp0[p].clone();
-      			mybitset1.and(fp1[q]) ;
-      			cardinality1 = mybitset1.cardinality();
-      			
-      			mybitset2 = (BitSet) fp0[p].clone();
-      			mybitset2.or(fp1[q]) ;
-      			cardinality2 = mybitset2.cardinality();
-      			
+      		
+	      			mybitset = (BitSet) fp0[p].clone();
+	      			mybitset.and(fp1[q]) ;
+	      			
+	      			cardinality_or = cardinality0[p] + cardinality1[q] - mybitset.cardinality();
+	      			
+	      			//calculate tanimoto as all 1's that occur in both fingerprints divided by the number of 1's in the original fingerprint
+	      			if (!(cardinality_or == 0)) {
+	      				tanimoto = (double) mybitset.cardinality() / (double) cardinality_or;
+	      			} else {
+	      				tanimoto = 0.0;
+	      			}
 
-      			if (!(cardinality2 == 0)) {
-      				tanimoto = (double) cardinality1 / (double) cardinality2;
-      			} else {
-      				tanimoto = 0.0;
-      			}
 	      			if (tanimoto > threshold) {
 	      				similars[p] = similars[p] + "," + ID1[q];
 	      				coefficients[p] = coefficients[p] + "," + String.format("%.2f",tanimoto);
