@@ -20,6 +20,7 @@
       <import feature="de.euopenscreen.feature" version="0.0.0" match="greaterOrEqual"/>
       <import feature="org.rdkit.knime.feature" version="2.4.0" match="greaterOrEqual"/>
       <import feature="org.knime.features.chem.types" version="2.11.0" match="greaterOrEqual"/>
+      <import feature="org.openscience.cdk.knime.feature" version="1.5.0" match="greaterOrEqual"/>
    </requires>
 
 </feature>
