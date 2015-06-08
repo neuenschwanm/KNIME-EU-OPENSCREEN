@@ -63,8 +63,7 @@ public class FastTanimotoNodeModel extends NodeModel {
     private String[] 	similars; //the output with the id's of all similar molecules
     private String[] 	coefficients; // the output with the corresponding tanimoto coefficients
     private int[]       number_of_similars; //the output indicating the number of similar molecules found
-    private int[]		cardinality_threshold; //the minimum number of 1's required in the second fingerprint to reach the threshold
-
+ 
     /* ------------------------------------------------------------------------------------- */
 
     /**
@@ -107,8 +106,7 @@ public class FastTanimotoNodeModel extends NodeModel {
       int[] cardinality = new int[counter];
       rowkey = new Hashtable <String, Integer>();
       number_of_similars = new int[counter];
-      cardinality_threshold = new int[counter];
-
+     
       //create and initialize arrays
       int i = 0;
       for (DataRow r : inData[0]) {
@@ -134,8 +132,7 @@ public class FastTanimotoNodeModel extends NodeModel {
 	      	coefficients[i] = "";
 	      	cardinality[i] = fp[i].cardinality();
 	    	number_of_similars[i] = 0;
-	     	cardinality_threshold[i] = (int) (cardinality[i] * threshold) - 1;
-
+	    
 	    	i++;
 
 	      	//check if execution was cancelled by the user
@@ -152,20 +149,21 @@ public class FastTanimotoNodeModel extends NodeModel {
      //perform tanimoto search and populate arrays
       BitSet mybitset;
       double tanimoto;
-
+      int cardinality_or;
 
       	for (int p=0; p<counter;p++){
       		for (int q=0; q < counter; q++){
 
-	     			//only if the fingerprint to compare to contains enough 1's - this increases speed for high tanimoto thresholds
-	      			if (cardinality[q] > cardinality_threshold[p]) {
-
+	     	
 
 		      			mybitset = (BitSet) fp[p].clone();
 		      			mybitset.and(fp[q]) ;
 
-		      			if (!(cardinality[p] == 0)) {
-		      				tanimoto = (double) mybitset.cardinality() / (double) cardinality[p];
+		      			cardinality_or = cardinality[p] + cardinality[q] - mybitset.cardinality();
+		      			
+		      			
+		      			if (!(cardinality_or == 0)) {
+		      				tanimoto = (double) mybitset.cardinality() / (double) cardinality_or;
 		      			} else {
 		      				tanimoto = 0.0;
 		      			}
@@ -177,7 +175,7 @@ public class FastTanimotoNodeModel extends NodeModel {
 		      							coefficients[p] = coefficients[p] + "," + String.format("%.2f",tanimoto);
 		      							number_of_similars[p] = number_of_similars[p] + 1;
 		      						}
-		      		}
+		      		
       			}
       		}
 
