@@ -53,12 +53,12 @@ public class FastTanimoto2NodeDialog extends DefaultNodeSettingsPane {
         
        
         SettingsModelString columnNameID2  = new SettingsModelString(FastTanimoto2NodeModel.CFGKEY_ID_COLUMN2 ,null); 
-        DialogComponent columnChooser3 = new DialogComponentColumnNameSelection(columnNameID2,"Molecule Identifier, reference set: ", 0, StringValue.class);
+        DialogComponent columnChooser3 = new DialogComponentColumnNameSelection(columnNameID2,"Molecule Identifier, reference set: ", 1, StringValue.class);
         addDialogComponent(columnChooser3);
            
         
         SettingsModelString columnNameFP2  = new SettingsModelString(FastTanimoto2NodeModel.CFGKEY_FP_COLUMN2,null);
-        DialogComponent columnChooser4 = new DialogComponentColumnNameSelection(columnNameFP2,"Molecule Fingerprint, reference set: ", 0, BitVectorValue.class);
+        DialogComponent columnChooser4 = new DialogComponentColumnNameSelection(columnNameFP2,"Molecule Fingerprint, reference set: ", 1, BitVectorValue.class);
         addDialogComponent(columnChooser4);
         
         
