@@ -2,7 +2,7 @@
 <feature
       id="de.euopenscreen.feature"
       label="EU-OPENSCREEN"
-      version="1.0.0.qualifier"
+      version="1.0.100.qualifier"
       provider-name="Martin Neuenschwander">
 
    <description>
