@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./FASTAReaderIcon.png" type="Source" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>FASTA Reader</name>
+    
+    <shortDescription>Read data from a FASTA file.</shortDescription>
+    
+    <fullDescription>
+        
+        <intro><p>This node can be used to read data from a FASTA file. The input file may be a single or multiple sequence file, each entry of the input file is represented by one row in the output table. The output table consists of two columns, one for the header or description and one for the nucleotide or peptide sequence.</p><p>Blank lines as well as comment lines (starting with a semicolon) will be ignored.</p></intro>
+        
+        <option name="Input File:">Enter a valid file name or URL. You can also choose a previously read file from the drop-down list, select a file from the "Browse..." dialog or assign a flow variable representing the target file using the variable button on the right.</option>
+        
+    </fullDescription>
+    
+    <ports>
+    
+        <outPort index="0" name="Data from FASTA file">Data from FASTA file</outPort>
+        
+    </ports>    
+
+</knimeNode>

@@ -2,7 +2,6 @@ package de.EUOPENSCREEN.FastTanimoto;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.Hashtable;
 import java.util.Locale;
 
@@ -18,6 +17,8 @@ import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.vector.bitvector.BitVectorValue;
+import org.knime.core.data.vector.bitvector.DenseBitVector;
+import org.knime.core.data.vector.bitvector.DenseBitVectorCell;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -100,10 +101,10 @@ public class FastTanimotoNodeModel extends NodeModel {
 
       //declare variables for tanimoto search, initialize the array with the total number of rows
       ID = new String[counter];
-      BitSet[]  fp = new BitSet[counter];
+      DenseBitVector[]  fp = new DenseBitVector[counter];
       similars = new String[counter];
       coefficients = new String[counter];
-      int[] cardinality = new int[counter];
+      long[] cardinality = new long[counter];
       rowkey = new Hashtable <String, Integer>();
       number_of_similars = new int[counter];
      
@@ -116,9 +117,11 @@ public class FastTanimotoNodeModel extends NodeModel {
 
 	    	//tests whether the cell for the fingerprint is missing and creates the BitSet from the String representation. A missing cell leads to a an empty BitSet
 	    	if(!r.getCell(fpColIndex).isMissing()) {
-	    		fp[i] = createFromString(r.getCell(fpColIndex).toString());
-	    	} else {
-	    		fp[i] = createFromString("");
+	    		//fp[i] = ((SparseBitVectorCell)r).getBitVectorCopy();
+	    		fp[i] =  ((DenseBitVectorCell) r.getCell(fpColIndex)).getBitVectorCopy() ;
+	    		}
+	    			else {
+	    			fp[i] = new DenseBitVector(0);
 	    	}
 
 	    	//tests whether the cell for the identifier is missing and creates a String cell representation. A missing cell gets an empty String as identifier
@@ -130,7 +133,7 @@ public class FastTanimotoNodeModel extends NodeModel {
 
 	      	similars[i] = "";
 	      	coefficients[i] = "";
-	      	cardinality[i] = fp[i].cardinality();
+	      	cardinality[i] = (int) fp[i].cardinality();
 	    	number_of_similars[i] = 0;
 	    
 	    	i++;
@@ -147,23 +150,26 @@ public class FastTanimotoNodeModel extends NodeModel {
       Locale.setDefault(Locale.ENGLISH);
 
      //perform tanimoto search and populate arrays
-      BitSet mybitset;
+      DenseBitVector mybitset;
+      DenseBitVector resultset;
+      
       double tanimoto;
-      int cardinality_or;
+      long cardinality_or;
 
       	for (int p=0; p<counter;p++){
       		for (int q=0; q < counter; q++){
 
 	     	
 
-		      			mybitset = (BitSet) fp[p].clone();
-		      			mybitset.and(fp[q]) ;
+		      			//mybitset = new DenseBitVector(fp[p]);
+		      			mybitset = new DenseBitVector(fp[p]);
+		      			resultset = mybitset.and(fp[q]) ;
 
-		      			cardinality_or = cardinality[p] + cardinality[q] - mybitset.cardinality();
+		      			cardinality_or = cardinality[p] + cardinality[q] - resultset.cardinality();
 		      			
 		      			
 		      			if (!(cardinality_or == 0)) {
-		      				tanimoto = (double) mybitset.cardinality() / (double) cardinality_or;
+		      				tanimoto = (double) resultset.cardinality() / (double) cardinality_or;
 		      			} else {
 		      				tanimoto = 0.0;
 		      			}
@@ -335,21 +341,7 @@ public class FastTanimotoNodeModel extends NodeModel {
 /* ----------------- functions for column rearranger -------------------------------------- */
 
 
-//takes a String with the molecule fingerprint as "01010100...", and creates a java BitSet object from it
-private static BitSet createFromString(String s) {
-    BitSet t = new BitSet(s.length());
-    int lastBitIndex = s.length() - 1;
-    int i = lastBitIndex;
-    while ( i >= 0) {
-        if ( s.charAt(i) == '1'){
-            t.set(lastBitIndex - i);
-            i--;
-        }
-        else
-            i--;
-    }
-    return t;
-}
+
 
 
 //function for joining the input table to the result table

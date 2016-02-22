@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./FASTAWriterIcon.png" type="Sink" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>FASTA Writer</name>
+    
+    <shortDescription>
+        takes input column with FASTA header, input column with FASTA sequence, and writes all entries with header and sequence to a single FASTA file
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>Node can be used to convert a table containing headers, comments, and sequences into a single FASTA file. If > signs are missing in headers 
+        they are automatically added (as missing ; signs in comments). The sequence is converted to uppercase and saved in lines with 80 chars length</intro>
+        
+        
+        <option name="Column containing the header">The FASTA header</option>
+        <option name="Comment">Column containing the (optional) comment</option>
+        <option name="Sequence">Column containing the sequence</option>
+        
+        
+      </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Table with FASTA data">Table containing 3 String columns for header, comments, and sequence</inPort>
+    </ports>    
+  
+</knimeNode>

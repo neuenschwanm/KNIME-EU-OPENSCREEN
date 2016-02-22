@@ -22,7 +22,16 @@
             factory-class="de.EUOPENSCREEN.FastTanimoto2.FastTanimoto2NodeFactory"
             id="de.EUOPENSCREEN.FastTanimoto2NodeFactory">
       </node>
-      
+           <node
+            category-path="/community/fmp001"
+            factory-class="de.EUOPENSCREEN.FASTAReader.FASTAReaderNodeFactory"
+            id="de.EUOPENSCREEN.FASTAReaderNodeFactory">
+      </node>
+         <node
+            category-path="/community/fmp001"
+            factory-class="de.EUOPENSCREEN.FASTAWriter.FASTAWriterNodeFactory"
+            id="de.EUOPENSCREEN.FASTAWriterNodeFactory">
+      </node>
       
    </extension>
    <extension
