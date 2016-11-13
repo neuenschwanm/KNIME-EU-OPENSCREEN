@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: EU-OPENSCREEN-Node extension for KNIME Workbench
 Bundle-SymbolicName: de.euopenscreen;singleton:=true
-Bundle-Version: 1.1.000.qualifier
+Bundle-Version: 1.2.000.qualifier
 Bundle-ClassPath: sparqlquery.jar,
  lib/commons-csv-1.0.jar,
  lib/httpclient-cache-4.2.6.jar,

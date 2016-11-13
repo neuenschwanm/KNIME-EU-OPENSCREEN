@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./DumbFileReaderIcon.png" type="Source" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>DumbFileReader</name>
+    
+    <shortDescription>
+        Read multiple text into table of strings
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>Scans a folder for files, opens a file and creates a table based on the header line, then reads in the data of all other files into this table as strings. The intended application of the node is to read in data from analytic instruments. These data files are usually presented in tabular format in text files, but may contain unexpected entries in data sets (e.g. non-numeric entries like "overflow"). This node intends to overcome this problem by first reading in all data as strings, then the data can be converted within the KNIME workflow. If errors occur (too short or to long lines), these will be noted within the data table and execution of the node will continue. 3 columns will be added to the data: DumbFileReader.filename: the filename of the analyzed file. DumbFileReader.LineNumber: the line number within the file where the data set was extracted from. DumbFileReader.Error: fine if no error occurred, or type of error detected      </intro>
+        
+        
+        <option name="Folder">The directory that will be scanned for files</option>
+        <option name="Line number of header line">column names will be derived from the content of the header line, line numbering starts with 1</option>
+   		<option name="Line number of first data line">Position of the first data line</option>
+       <option name="Line number of last line">Position of the last data line</option>
+       <option name="Delimiter">The column delimiter used in the files, default is tab \t</option>
+           
+       
+       
+       
+        <!-- possibly more options that can also be grouped by tabs -->
+        <!--
+        <tab name="Standard Options">
+            <option name="short name of first option (like in the dialog)">description of first option</option>
+            <option name="short name of second option (like in the dialog)">description of second option</option>
+        </tab>
+        <tab name="Advanced Options">
+            <option name="short name of first advanced option (like in the dialog)">description of first advanced option</option>
+        </tab>
+        -->
+    </fullDescription>
+    
+    <ports>
+        <outPort index="0" name="concatenated data">data table with all data as strings</outPort>
+        <!-- possibly more output ports here-->
+    </ports>    
+  
+</knimeNode>

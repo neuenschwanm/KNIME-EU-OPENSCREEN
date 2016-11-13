@@ -84,7 +84,7 @@ public class FastTanimotoNodeModel extends NodeModel {
             final ExecutionContext exec) throws Exception {
 
       //determine the number of data sets in the input
-      counter = inData[0].getRowCount();
+      counter = (int) inData[0].size();
 
       //get data from in port 0
       DataTableSpec inputSpec = inData[0].getSpec();

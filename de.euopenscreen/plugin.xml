@@ -1,47 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.0"?>
-<plugin>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?eclipse version="3.0"?><plugin>
 
   
   
    
-   <extension
-         point="org.knime.workbench.repository.nodes">
-      <node
-            category-path="/community/fmp001"
-            factory-class="de.EUOPENSCREEN.SPARQLQuery.SPARQLQueryNodeFactory"
-            id="de.EUOPENSCREEN.SPARQLQueryNodeFactory">
+   <extension point="org.knime.workbench.repository.nodes">
+      <node category-path="/community/fmp001" factory-class="de.EUOPENSCREEN.SPARQLQuery.SPARQLQueryNodeFactory" >
       </node>
-      <node
-            category-path="/community/fmp001"
-            factory-class="de.EUOPENSCREEN.FastTanimoto.FastTanimotoNodeFactory"
-            id="de.EUOPENSCREEN.FastTanimotoNodeFactory">
+      <node category-path="/community/fmp001" factory-class="de.EUOPENSCREEN.FastTanimoto.FastTanimotoNodeFactory" >
       </node>
-        <node
-            category-path="/community/fmp001"
-            factory-class="de.EUOPENSCREEN.FastTanimoto2.FastTanimoto2NodeFactory"
-            id="de.EUOPENSCREEN.FastTanimoto2NodeFactory">
+        <node category-path="/community/fmp001" factory-class="de.EUOPENSCREEN.FastTanimoto2.FastTanimoto2NodeFactory" >
       </node>
-           <node
-            category-path="/community/fmp001"
-            factory-class="de.EUOPENSCREEN.FASTAReader.FASTAReaderNodeFactory"
-            id="de.EUOPENSCREEN.FASTAReaderNodeFactory">
+           <node category-path="/community/fmp001" factory-class="de.EUOPENSCREEN.FASTAReader.FASTAReaderNodeFactory" >
       </node>
-         <node
-            category-path="/community/fmp001"
-            factory-class="de.EUOPENSCREEN.FASTAWriter.FASTAWriterNodeFactory"
-            id="de.EUOPENSCREEN.FASTAWriterNodeFactory">
+         <node category-path="/community/fmp001" factory-class="de.EUOPENSCREEN.FASTAWriter.FASTAWriterNodeFactory" >
+      </node>
+       <node category-path="/community/fmp001" factory-class="de.EUOPENSCREEN.DumbFileReader.DumbFileReaderNodeFactory" >
       </node>
       
-   </extension>
-   <extension
-         point="org.knime.workbench.repository.categories">
-      <category
-            icon="icons/EUOPENSCREENIcon.png"
-            level-id="fmp001"
-            locked="true"
-            name="HTS Data Mining"
-            path="/community">
+
+</extension>
+   <extension point="org.knime.workbench.repository.categories">
+      <category icon="icons/EUOPENSCREENIcon.png" level-id="fmp001" locked="true" name="HTS Data Mining" path="/community">
       </category>
    </extension>
    

@@ -110,7 +110,7 @@ public class FASTAWriterNodeModel extends NodeModel {
     		exec.checkCanceled();
     		//set progress with message
     		
-    		exec.setProgress( (double) counter / (double) inData[0].getRowCount(), String.valueOf(counter) + " sequences written to file");
+    		exec.setProgress( (double) counter / (double) inData[0].size(), String.valueOf(counter) + " sequences written to file");
     		counter++;
     	  }
       

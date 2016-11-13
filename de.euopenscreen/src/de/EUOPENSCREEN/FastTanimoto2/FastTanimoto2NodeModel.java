@@ -2,7 +2,6 @@ package de.EUOPENSCREEN.FastTanimoto2;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.Hashtable;
 import java.util.Locale;
 
@@ -18,6 +17,8 @@ import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.vector.bitvector.BitVectorValue;
+import org.knime.core.data.vector.bitvector.DenseBitVector;
+import org.knime.core.data.vector.bitvector.DenseBitVectorCell;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -96,7 +97,7 @@ public class FastTanimoto2NodeModel extends NodeModel {
             final ExecutionContext exec) throws Exception {
 
       //determine the number of data sets in the input
-      counter0 = inData[0].getRowCount();
+      counter0 = (int) inData[0].size();
 
       //get data from in port 0
       DataTableSpec inputSpec = inData[0].getSpec();
@@ -117,15 +118,15 @@ public class FastTanimoto2NodeModel extends NodeModel {
 
       //declare variables for tanimoto search, initialize the array with the total number of rows
       ID0 = new String[counter0];
-      BitSet[]  fp0 = new BitSet[counter0];
+      DenseBitVector[]  fp0 = new DenseBitVector[counter0];
       similars = new String[counter0];
       coefficients = new String[counter0];
-      int[] cardinality0 = new int[counter0];
+      long[] cardinality0 = new long[counter0];
       rowkey = new   Hashtable<String, Integer>() ;
       number_of_similars = new int[counter0];
   
       //determine the number of data sets in the input
-      counter1 = inData[1].getRowCount();
+      counter1 = (int) inData[1].size();
 
       //get data from in port 0
     //  DataTableSpec inputSpec1 = inData[1].getSpec();
@@ -136,8 +137,8 @@ public class FastTanimoto2NodeModel extends NodeModel {
 
       //declare variables for tanimoto search, initialize the array with the total number of rows
       ID1 = new String[counter1];
-      BitSet[]  fp1 = new BitSet[counter1];
-      int[] cardinality1 = new int[counter1];
+      DenseBitVector[]  fp1 = new DenseBitVector[counter1];
+      long[] cardinality1 = new long[counter1];
 
       //create and initialize arrays, table0, test set
       int i = 0;
@@ -151,10 +152,11 @@ public class FastTanimoto2NodeModel extends NodeModel {
 
 	    	//tests whether the cell for the fingerprint is missing and creates the BitSet from the String representation. A missing cell leads to a an empty BitSet
 	    	if(!r.getCell(fpColIndex).isMissing()) {
-	    		fp0[i] = createFromString(r.getCell(fpColIndex).toString());
+	     		fp0[i] =  ((DenseBitVectorCell) r.getCell(fpColIndex)).getBitVectorCopy() ;
+	    		
 	    	} else {
-	    		fp0[i] = createFromString("");
-	    	}
+	 			fp0[i] = new DenseBitVector(0);
+	 		}
 
 	    	//tests whether the cell for the identifier is missing and creates a String cell representation. A missing cell gets an empty String as identifier
 	    	if (!r.getCell(idColIndex).isMissing()) {
@@ -184,12 +186,11 @@ public class FastTanimoto2NodeModel extends NodeModel {
 
       for (DataRow r : inData[1]) {
 
-
 	    	//tests whether the cell for the fingerprint is missing and creates the BitSet from the String representation. A missing cell leads to a an empty BitSet
 	    	if(!r.getCell(fpColIndex2).isMissing()) {
-	    		fp1[j] = createFromString(r.getCell(fpColIndex2).toString());
+	     		fp1[j] =  ((DenseBitVectorCell) r.getCell(fpColIndex2)).getBitVectorCopy() ;
 	    	} else {
-	    		fp1[j] = createFromString("");
+	    		fp1[j] = new DenseBitVector(0);	    
 	    	}
 
 	    	//tests whether the cell for the identifier is missing and creates a String cell representation. A missing cell gets an empty String as identifier
@@ -215,9 +216,9 @@ public class FastTanimoto2NodeModel extends NodeModel {
       Locale.setDefault(Locale.ENGLISH);
 
      //perform tanimoto search and populate arrays
-      BitSet mybitset;
+      DenseBitVector mybitset,resultset;
       double tanimoto;
-      int cardinality_or;
+      long cardinality_or;
 
       //outer loop, goes through table 0
       	for (int p=0; p<counter0;p++){
@@ -225,14 +226,17 @@ public class FastTanimoto2NodeModel extends NodeModel {
       		for (int q=0; q < counter1; q++){
 
       		
-	      			mybitset = (BitSet) fp0[p].clone();
-	      			mybitset.and(fp1[q]) ;
-	      			
-	      			cardinality_or = cardinality0[p] + cardinality1[q] - mybitset.cardinality();
+      			
+      			mybitset = new DenseBitVector(fp0[p]);
+      			resultset=mybitset.and(fp1[q]) ;
+
+      			
+      				
+	      			cardinality_or = cardinality0[p] + cardinality1[q] - resultset.cardinality();
 	      			
 	      			//calculate tanimoto as all 1's that occur in both fingerprints divided by the number of 1's in the original fingerprint
 	      			if (!(cardinality_or == 0)) {
-	      				tanimoto = (double) mybitset.cardinality() / (double) cardinality_or;
+	      				tanimoto = (double) resultset.cardinality() / (double) cardinality_or;
 	      			} else {
 	      				tanimoto = 0.0;
 	      			}
@@ -439,25 +443,6 @@ public class FastTanimoto2NodeModel extends NodeModel {
 
 
 /* ----------------- functions for column rearranger -------------------------------------- */
-
-
-
-
-//takes a String with the molecule fingerprint as "01010100...", and creates a java BitSet object from it
-private static BitSet createFromString(String s) {
-    BitSet t = new BitSet(s.length());
-    int lastBitIndex = s.length() - 1;
-    int i = lastBitIndex;
-    while ( i >= 0) {
-        if ( s.charAt(i) == '1'){
-            t.set(lastBitIndex - i);
-            i--;
-        }
-        else
-            i--;
-    }
-    return t;
-}
 
 
 //function for joining the input table to the result table
